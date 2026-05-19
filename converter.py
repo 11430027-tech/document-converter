@@ -2,6 +2,8 @@ import json
 import toml
 import yaml
 from html.parser import HTMLParser
+# 💡 保持 Python 3.8 相容性
+from typing import Tuple
 from CORE import Converter, register, logging_decorator, logger
 
 def dict_to_html5(data) -> str:
@@ -23,7 +25,7 @@ def dict_to_html5(data) -> str:
 class HTML5DlParser(HTMLParser):
     def __init__(self):
         super().__init__()
-        self.stack = []
+        self.stack = []  # 💡 升級：改為儲存 (型態, 物件, 屬於哪個父層鍵值)
         self.current_tag = None
         self.current_key = None
         self.result = None
@@ -32,10 +34,13 @@ class HTML5DlParser(HTMLParser):
         self.current_tag = tag
         if tag == 'dl':
             new_dict = {}
-            self.stack.append(('dict', new_dict))
+            # 💡 進入新層級時，把目前的鍵值一起推入記憶棧保護起來
+            self.stack.append(('dict', new_dict, self.current_key))
+            self.current_key = None  
         elif tag == 'ul':
             new_list = []
-            self.stack.append(('list', new_list))
+            self.stack.append(('list', new_list, self.current_key))
+            self.current_key = None
 
     def handle_data(self, data):
         data = data.strip()
@@ -45,7 +50,7 @@ class HTML5DlParser(HTMLParser):
             self.current_key = data
         elif self.current_tag in ('dd', 'li'):
             if self.stack:
-                tag_type, obj = self.stack[-1]
+                tag_type, obj, _ = self.stack[-1]
                 if tag_type == 'list':
                     obj.append(data)
                 elif tag_type == 'dict' and self.current_key:
@@ -54,20 +59,21 @@ class HTML5DlParser(HTMLParser):
     def handle_endtag(self, tag):
         if tag in ('dl', 'ul'):
             if len(self.stack) > 1:
-                tag_type, closed_obj = self.stack.pop()
-                parent_type, parent_obj = self.stack[-1]
-                if parent_type == 'dict' and self.current_key:
-                    parent_obj[self.current_key] = closed_obj
+                # 💡 結束層級時，把該層級的物件和原本的父層鍵值（p_key）一起拔出來
+                tag_type, closed_obj, p_key = self.stack.pop()
+                parent_type, parent_obj, _ = self.stack[-1]
+                if parent_type == 'dict' and p_key:
+                    parent_obj[p_key] = closed_obj
                 elif parent_type == 'list':
                     parent_obj.append(closed_obj)
             else:
                 if self.stack:
-                    _, self.result = self.stack.pop()
+                    _, self.result, _ = self.stack.pop()
 
 @register
 class JsonToToml(Converter):
     @property
-    def supported_formats(self) -> tuple[str, str]:
+    def supported_formats(self) -> Tuple[str, str]:
         return ("json", "toml")
 
     @logging_decorator
@@ -79,7 +85,7 @@ class JsonToToml(Converter):
 @register
 class TomlToJson(Converter):
     @property
-    def supported_formats(self) -> tuple[str, str]:
+    def supported_formats(self) -> Tuple[str, str]:
         return ("toml", "json")
 
     @logging_decorator
@@ -91,7 +97,7 @@ class TomlToJson(Converter):
 @register
 class TomlToYaml(Converter):
     @property
-    def supported_formats(self) -> tuple[str, str]:
+    def supported_formats(self) -> Tuple[str, str]:
         return ("toml", "yaml")
 
     @logging_decorator
@@ -103,7 +109,7 @@ class TomlToYaml(Converter):
 @register
 class YamlToToml(Converter):
     @property
-    def supported_formats(self) -> tuple[str, str]:
+    def supported_formats(self) -> Tuple[str, str]:
         return ("yaml", "toml")
 
     @logging_decorator
@@ -115,7 +121,7 @@ class YamlToToml(Converter):
 @register
 class YamlToHtml(Converter):
     @property
-    def supported_formats(self) -> tuple[str, str]:
+    def supported_formats(self) -> Tuple[str, str]:
         return ("yaml", "html")
 
     @logging_decorator
@@ -127,7 +133,7 @@ class YamlToHtml(Converter):
 @register
 class HtmlToYaml(Converter):
     @property
-    def supported_formats(self) -> tuple[str, str]:
+    def supported_formats(self) -> Tuple[str, str]:
         return ("html", "yaml")
 
     @logging_decorator

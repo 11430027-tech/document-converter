@@ -2,6 +2,8 @@ import time
 import logging
 from abc import ABC, abstractmethod
 from functools import reduce, wraps
+# 💡 關鍵：從 typing 模組引入大寫的 Tuple 來相容 Python 3.8
+from typing import Tuple
 
 logger = logging.getLogger("ConverterFramework")
 
@@ -17,7 +19,7 @@ class UnsupportedFormatError(ConverterError):
 class Converter(ABC):
     @property
     @abstractmethod
-    def supported_formats(self) -> tuple[str, str]:
+    def supported_formats(self) -> Tuple[str, str]:  # 💡 這裡改成了大寫 Tuple
         pass
 
     @abstractmethod
