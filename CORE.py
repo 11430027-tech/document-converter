@@ -106,6 +106,25 @@ def resolve_chain(registry, source_fmt: str, target_fmt: str) -> Pipeline:
     
     return reduce(lambda acc, c: Pipeline(acc.converters + [c]), converters[1:], Pipeline([converters[0]]))
 
+import time
+from functools import wraps
+
+def logging_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        try:
+            result = func(*args, **kwargs)
+            duration = time.time() - start_time
+            print(f"[INFO] Execution successful: {func.__name__} took {duration:.4f}s")
+            return result
+        except Exception as e:
+            duration = time.time() - start_time
+            print(f"[ERROR] Execution failed: {func.__name__} after {duration:.4f}s - {str(e)}")
+            raise e
+    return wrapper
+
+@logging_decorator
 def convert(input_data: str, source_fmt: str, target_fmt: str) -> str:
     registry = ConverterRegistry()
     pipeline = resolve_chain(registry, source_fmt, target_fmt)
