@@ -1,10 +1,8 @@
 import json
 from CORE import convert
 import converter
-
-# ⚡ 強制執行：不開任何 function，只要 Python 讀到這一行就必須立刻印字！
 print("\n==================================================")
-print(">>>  [!!! 警報 !!!] 程式碼強制執行成功 ！！！")
+print("程式碼強制執行成功")
 print("==================================================")
 
 initial_structure = {

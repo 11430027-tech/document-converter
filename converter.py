@@ -2,7 +2,6 @@ import json
 import toml
 import yaml
 from html.parser import HTMLParser
-# 💡 保持 Python 3.8 相容性
 from typing import Tuple
 from CORE import Converter, register, logging_decorator, logger
 
@@ -25,7 +24,7 @@ def dict_to_html5(data) -> str:
 class HTML5DlParser(HTMLParser):
     def __init__(self):
         super().__init__()
-        self.stack = []  # 💡 升級：改為儲存 (型態, 物件, 屬於哪個父層鍵值)
+        self.stack = []
         self.current_tag = None
         self.current_key = None
         self.result = None
@@ -34,7 +33,6 @@ class HTML5DlParser(HTMLParser):
         self.current_tag = tag
         if tag == 'dl':
             new_dict = {}
-            # 💡 進入新層級時，把目前的鍵值一起推入記憶棧保護起來
             self.stack.append(('dict', new_dict, self.current_key))
             self.current_key = None  
         elif tag == 'ul':
@@ -59,7 +57,6 @@ class HTML5DlParser(HTMLParser):
     def handle_endtag(self, tag):
         if tag in ('dl', 'ul'):
             if len(self.stack) > 1:
-                # 💡 結束層級時，把該層級的物件和原本的父層鍵值（p_key）一起拔出來
                 tag_type, closed_obj, p_key = self.stack.pop()
                 parent_type, parent_obj, _ = self.stack[-1]
                 if parent_type == 'dict' and p_key:
