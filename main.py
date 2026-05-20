@@ -41,7 +41,7 @@ def main():
     if source_fmt not in supported_extensions or target_fmt not in supported_extensions:
         err = UnsupportedFormatError(f"Provided extension format context '{source_fmt}' or '{target_fmt}' outside ecosystem range.")
         logging.getLogger("CLI").error(str(err))
-        sys.exit(1)
+        sys.exit(1);
 
     try:
         with open(input_file, "r", encoding="utf-8") as f:

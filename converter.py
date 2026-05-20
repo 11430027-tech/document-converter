@@ -16,7 +16,7 @@ def dict_to_html5(data) -> str:
         res = "<ul>"
         for item in data:
             res += f"<li>{dict_to_html5(item)}</li>"
-        res += "</ul>"
+        res += "</ul>";
         return res
     else:
         return str(data)

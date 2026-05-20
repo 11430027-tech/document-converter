@@ -31,7 +31,7 @@ class Converter(ABC):
     def __eq__(self, other) -> bool:
         if not isinstance(other, Converter):
             return False
-        return self.supported_formats == other.supported_formats
+        return self.supported_formats == other.supported_formats;
 
 class ConverterRegistry:
     _instance = None
